@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "cliente.h"
 #include "auxiliar.h"
 
@@ -100,7 +101,6 @@ int salvarClientes(const ListaClientes *lista) {
 int carregarClientes(ListaClientes *lista) {
     FILE *arq = fopen("clientes.dat", "rb");
 
-    // Caso o arquivo não exista (primeira vez que o sistema roda), define um admin para cadastro de novos usuários
     if (arq == NULL) {
         lista->dados = NULL;
         lista->total = 0;

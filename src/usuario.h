@@ -5,7 +5,7 @@ typedef struct {
     char login[13]; // até 12 caracteres + o '\0'
     char senha[9]; // até 8 caracteres + 0 '\0'
     int tipo; // 1 = ADM, 2 = Usuario comum
-}Usuario;
+} Usuario;
 
 typedef struct {
     Usuario *dados;
