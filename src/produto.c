@@ -53,7 +53,7 @@ void cadastrarProduto(ListaProdutos *lista, const ListaCategorias *listaCategori
     novo.codigoCategoria = codigoCategoria;
 
     novo.precoCompra = lerFloatPositivo("Preco de compra: R$ ");
-    novo.margemLucro = lerFloatPositivo("Margem de lucro (%%): ");
+    novo.margemLucro = lerFloatPositivo("Margem de lucro (%): ");
 
     novo.precoVenda = novo.precoCompra * (1.0f + (novo.margemLucro / 100.0f));
     printf("Preco de venda calculado: R$ %.2f\n", novo.precoVenda);
@@ -64,10 +64,61 @@ void cadastrarProduto(ListaProdutos *lista, const ListaCategorias *listaCategori
     adicionarProduto(lista, novo);
 }
 
-void adicionarProduto(ListaProdutos *lista, Produto novo) {
+int adicionarProduto(ListaProdutos *lista, Produto novo) {
+    int novoTotal = lista->total + 1;
 
+    Produto *temp = realloc(lista->dados, novoTotal * sizeof(Produto));
+
+    if (temp == NULL) {
+        printf("\nErro: Falha ao alocar memoria para Produto!\n");
+        return 0;
+    }
+
+    lista->dados = temp;
+    lista->dados[lista->total] = novo;
+    lista->total = novoTotal;
+
+    return 1;
 }
 
+/* --------------     Funções de ordenação     -------------- */
+void listarCategorias(const ListaCategorias *lista) {
+    if (lista->total == 0) {
+        printf("\nErro: Nao existem categorias cadastradas!\n");
+        return;
+    }
+
+    printf("\n============ RELATORIO DE CATEGORIAS =============\n");
+
+    for (int i = 0; i < lista->total; i++) {
+        printf("%-46s#%3d\n", "Categoria:", i + 1);
+        printf("%-15s %34d\n", "Codigo:", lista->dados[i].codigo);
+        printf("%-15s %34.34s\n", "Nome:", lista->dados[i].nome);
+        printf("--------------------------------------------------\n");
+    }
+}
+
+void listarProdutos(const ListaProdutos *lista) {
+    if (lista->total == 0) {
+        printf("\nErro: Nao existem produtos cadastrados!\n");
+        return;
+    }
+
+    printf("\n============= RELATORIO DE PRODUTOS ==============\n");
+
+    for (int i = 0; i < lista->total; i++) {
+        printf("%-46s#%3d\n", "Produto:", i + 1);
+        printf("%-35s%15d\n", "Codigo:", lista->dados[i].codigo);
+        printf("%-15s %34.34s\n", "Descricao:", lista->dados[i].descricao);
+        printf("%-15s %34.34s\n", "Categoria:", lista->dados[i].nomeCategoria);
+        printf("%-41sR$ %6.2f\n", "Preco de compra:", lista->dados[i].precoCompra);
+        printf("%-35s%14.2f%%\n", "Margem de lucro:", lista->dados[i].margemLucro);
+        printf("%-41sR$ %6.2f\n", "Preco de venda:", lista->dados[i].precoVenda);
+        printf("%-35s%15d\n", "Estoque atual:", lista->dados[i].estoque);
+        printf("%-35s%15d\n", "Estoque minimo:", lista->dados[i].estoqueMinimo);
+        printf("--------------------------------------------------\n");
+    }
+}
 
 /* --------------     Funções de persistência de dados     -------------- */
 int salvarProdutos(const ListaProdutos *lista) {

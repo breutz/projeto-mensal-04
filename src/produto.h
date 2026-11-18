@@ -32,7 +32,7 @@ typedef struct {
 void cadastrarCategoria(ListaCategorias *lista);
 int adicionarCategoria(ListaCategorias *lista, Categoria novo);
 void cadastrarProduto(ListaProdutos *lista, const ListaCategorias *listaCategorias);
-void adicionarProduto(ListaProdutos *lista, Produto novo);
+int adicionarProduto(ListaProdutos *lista, Produto novo);
 
 /* --------------     Protótipos de ordenação     -------------- */
 void listarCategorias(const ListaCategorias *lista);

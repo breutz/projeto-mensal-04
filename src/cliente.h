@@ -22,6 +22,7 @@ int adicionarCliente(ListaClientes *lista, Cliente novo);
 
 /* --------------     Protótipos de ordenação     -------------- */
 void listarClientes(const ListaClientes *lista);
+void ordenarClientesPorNome(ListaClientes *lista);
 
 /* --------------     Protótipos de persitência de dados     -------------- */
 int salvarClientes(const ListaClientes *lista);

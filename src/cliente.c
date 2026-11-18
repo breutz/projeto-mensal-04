@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "cliente.h"
 #include "auxiliar.h"
 
@@ -44,10 +45,12 @@ void listarClientes(const ListaClientes *lista) {
         return;
     }
 
+    ordenarClientesPorNome((ListaClientes *) lista);
+
     printf("\n============= RELATORIO DE CLIENTES ==============\n");
     
     for (int i = 0; i < lista->total; i++) {
-        printf("%-46s#%3d\n", "Cliente:", lista->dados[i].codigo);
+        printf("%-46s#%3d\n", "Cliente:", i + 1);
         printf("%-15s %34.34s\n", "Nome:", lista->dados[i].nome);
         printf("%-15s %34.34s\n", "Nome Social:", lista->dados[i].nomeSocial);
         printf("%-15s %34.34s\n", "CPF:", lista->dados[i].cpf);
@@ -55,6 +58,20 @@ void listarClientes(const ListaClientes *lista) {
         printf("%-15s %34.34s\n", "Bairro:", lista->dados[i].bairro);
         printf("%-15s %34.34s\n", "Telefone:", lista->dados[i].telefone);
         printf("--------------------------------------------------\n");
+    }
+}
+
+void ordenarClientesPorNome(ListaClientes *lista) {
+    if (lista->total > 1) {
+        for (int i = 0; i < lista->total - 1; i++) {
+            for (int j = 0; j < lista->total - 1 - i; j++) {
+                if (strcmp(lista->dados[j].nome, lista->dados[j + 1].nome) > 0) {
+                    Cliente temp = lista->dados[j];
+                    lista->dados[j] = lista->dados[j + 1];
+                    lista->dados[j + 1] = temp;
+                }
+            }
+        }
     }
 }
 
