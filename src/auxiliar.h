@@ -10,4 +10,10 @@ float lerFloatPositivo(const char *mensagem);
 /* Lê uma string com segurança garantindo o limite de caracteres */
 void lerTexto(const char *mensagem, char *destino, int tamanhoMaximo);
 
+/* Funções auxiliares de data (DD/MM/AAAA) */
+void obterDataAtual(char *destino);
+int validarData(const char *data);
+void lerData(const char *mensagem, char *destino);
+int dataParaInteiro(const char *data);
+
 #endif

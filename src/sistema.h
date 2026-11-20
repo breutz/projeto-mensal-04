@@ -4,14 +4,19 @@
 #include "usuario.h"
 #include "cliente.h"
 #include "produto.h"
+#include "caixa.h"
+#include "venda.h"
 
-typedef struct {
+typedef struct Sistema {
+    Caixa caixa;
     ListaUsuarios usuarios;
     ListaClientes clientes;
     ListaCategorias categorias;
     ListaProdutos produtos;
-    Usuario usuarioLogado; // Guarda os dados do usuario logado no momento
-    int logado; // 0 = Ninguem logado, 1 = Usuario autenticado com sucesso
+    ListaVendas vendas;
+    ListaPagamentos pagamentos;
+    Usuario usuarioLogado;
+    int logado;
 } Sistema;
 
 #endif

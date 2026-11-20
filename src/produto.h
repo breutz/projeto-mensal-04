@@ -31,14 +31,17 @@ typedef struct {
 /* --------------     Protótipos de cadastro     -------------- */
 void cadastrarCategoria(ListaCategorias *lista);
 int adicionarCategoria(ListaCategorias *lista, Categoria novo);
-void cadastrarProduto(ListaProdutos *lista, const ListaCategorias *listaCategorias);
+void cadastrarProduto(ListaProdutos *lista, ListaCategorias *listaCategorias);
 int adicionarProduto(ListaProdutos *lista, Produto novo);
 
-/* --------------     Protótipos de ordenação     -------------- */
+/* --------------     Protótipos de consulta, listagem e ordenação     -------------- */
+void exibirCatalogoProdutos(const ListaProdutos *lista);
 void listarCategorias(const ListaCategorias *lista);
 void listarProdutos(const ListaProdutos *lista);
+int buscarCategoriaPorCodigo(const ListaCategorias *lista, int codigo);
+int buscarProdutoPorCodigo(const ListaProdutos *lista, int codigo);
 
-/* --------------     Protótipos de persitência de dados     -------------- */
+/* --------------     Protótipos de persistência de dados     -------------- */
 int salvarCategorias(const ListaCategorias *lista);
 int carregarCategorias(ListaCategorias *lista);
 int salvarProdutos(const ListaProdutos *lista);

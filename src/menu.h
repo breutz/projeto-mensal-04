@@ -5,5 +5,6 @@
 
 void menuPrincipal(Sistema *s);
 void menuCadastros(Sistema *s);
+void menuVendas(Sistema *s);
 
 #endif

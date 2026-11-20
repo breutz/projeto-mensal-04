@@ -8,17 +8,27 @@
 void cadastrarCliente(ListaClientes *lista) {
     Cliente novo;
 
-    novo.codigo = lista->total + 1;
+    // Garante código único mesmo se a lista estiver fora de ordem
+    int maiorCodigo = 0;
+    for (int i = 0; i < lista->total; i++) {
+        if (lista->dados[i].codigo > maiorCodigo) {
+            maiorCodigo = lista->dados[i].codigo;
+        }
+    }
+    novo.codigo = maiorCodigo + 1;
+
+    printf("\n=============== CADASTRO DE CLIENTE ==============\n");
 
     lerTexto("Nome completo: ", novo.nome, sizeof(novo.nome));
-    lerTexto("Nome social: ", novo.nomeSocial, sizeof(novo.nomeSocial));
+    lerTexto("Nome social (ou '-' se nao tiver): ", novo.nomeSocial, sizeof(novo.nomeSocial));
     lerTexto("CPF: ", novo.cpf, sizeof(novo.cpf));
     lerTexto("Endereco (Rua e numero): ", novo.endereco, sizeof(novo.endereco));
     lerTexto("Bairro: ", novo.bairro, sizeof(novo.bairro));
     lerTexto("Telefone/WhatsApp: ", novo.telefone, sizeof(novo.telefone));
 
-    adicionarCliente(lista, novo);
-    printf("\nCliente '%s' cadastrado com sucesso!\n", novo.nome);
+    if (adicionarCliente(lista, novo)) {
+        printf("\nCliente '%s' (Cod. %d) cadastrado com sucesso!\n", novo.nome, novo.codigo);
+    }
 }
 
 int adicionarCliente(ListaClientes *lista, Cliente novo) {
@@ -27,7 +37,7 @@ int adicionarCliente(ListaClientes *lista, Cliente novo) {
     Cliente *temp = realloc(lista->dados, novoTotal * sizeof(Cliente));
 
     if (temp == NULL) {
-        printf("\nErro: Falha ao alocar memoria para Cliente!\n");
+        printf("\nERRO: Falha ao alocar memoria para Cliente!\n");
         return 0;
     }
 
@@ -38,27 +48,57 @@ int adicionarCliente(ListaClientes *lista, Cliente novo) {
     return 1;
 }
 
-/* --------------     Funções de ordenação     -------------- */
-void listarClientes(const ListaClientes *lista) {
+/* --------------     Funções de consulta, listagem e ordenação     -------------- */
+// Exibe lista compacta (50 colunas) para seleção rápida durante a venda
+void exibirCatalogoClientes(const ListaClientes *lista) {
     if (lista->total == 0) {
-        printf("\nErro: Nao existem clientes cadastrados!\n");
+        printf("\nAVISO: Nao existem clientes cadastrados!\n");
         return;
     }
 
-    ordenarClientesPorNome((ListaClientes *) lista);
+    printf("\n============== CATALOGO DE CLIENTES ==============\n");
+    printf("%-4s | %-43s\n", "COD", "NOME DO CLIENTE");
+    printf("--------------------------------------------------\n");
+
+    for (int i = 0; i < lista->total; i++) {
+        printf("%-4d | %-43.43s\n", lista->dados[i].codigo, lista->dados[i].nome);
+    }
+    printf("==================================================\n");
+}
+
+void listarClientes(const ListaClientes *lista) {
+    if (lista->total == 0) {
+        printf("\nAVISO: Nao existem clientes cadastrados!\n");
+        return;
+    }
+
+    // Cria cópia temporária para ordenar sem quebrar o contrato 'const' da lista original
+    ListaClientes copia = {0};
+    copia.dados = (Cliente *) malloc(lista->total * sizeof(Cliente));
+    if (copia.dados == NULL) {
+        printf("\nERRO: Falha ao alocar memoria para o relatorio!\n");
+        return;
+    }
+    memcpy(copia.dados, lista->dados, lista->total * sizeof(Cliente));
+    copia.total = lista->total;
+
+    ordenarClientesPorNome(&copia);
 
     printf("\n============= RELATORIO DE CLIENTES ==============\n");
-    
-    for (int i = 0; i < lista->total; i++) {
+
+    for (int i = 0; i < copia.total; i++) {
         printf("%-46s#%3d\n", "Cliente:", i + 1);
-        printf("%-15s %34.34s\n", "Nome:", lista->dados[i].nome);
-        printf("%-15s %34.34s\n", "Nome Social:", lista->dados[i].nomeSocial);
-        printf("%-15s %34.34s\n", "CPF:", lista->dados[i].cpf);
-        printf("%-15s %34.34s\n", "Endereco:", lista->dados[i].endereco);
-        printf("%-15s %34.34s\n", "Bairro:", lista->dados[i].bairro);
-        printf("%-15s %34.34s\n", "Telefone:", lista->dados[i].telefone);
+        printf("%-35s%15d\n", "Codigo:", copia.dados[i].codigo);
+        printf("%-15s %34.34s\n", "Nome:", copia.dados[i].nome);
+        printf("%-15s %34.34s\n", "Nome Social:", copia.dados[i].nomeSocial);
+        printf("%-15s %34.34s\n", "CPF:", copia.dados[i].cpf);
+        printf("%-15s %34.34s\n", "Endereco:", copia.dados[i].endereco);
+        printf("%-15s %34.34s\n", "Bairro:", copia.dados[i].bairro);
+        printf("%-15s %34.34s\n", "Telefone:", copia.dados[i].telefone);
         printf("--------------------------------------------------\n");
     }
+
+    free(copia.dados);
 }
 
 void ordenarClientesPorNome(ListaClientes *lista) {
@@ -75,44 +115,53 @@ void ordenarClientesPorNome(ListaClientes *lista) {
     }
 }
 
+// Busca um cliente pelo codigo e retorna seu indice no vetor (-1 se nao encontrar)
+int buscarClientePorCodigo(const ListaClientes *lista, int codigo) {
+    for (int i = 0; i < lista->total; i++) {
+        if (lista->dados[i].codigo == codigo) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 /* --------------     Funções de persistência de dados     -------------- */
 int salvarClientes(const ListaClientes *lista) {
-    // Grava primeiro um arquivo temporário (conceitos de Gravação Atômica)
+    // Grava primeiro em arquivo temporário (Gravação Atômica)
     FILE *arq = fopen("clientes.tmp", "wb");
     if (arq == NULL) {
-        printf("\nErro: Falha ao criar o aquivo de clientes temporario!\n");
+        printf("\nERRO: Falha ao criar o arquivo temporario de clientes!\n");
         return 0;
     }
 
-    // Grava a quantidade de clientes e verifica se deu certo, se não, remove o arquivo temporário
+    // Grava a quantidade de clientes e verifica se deu certo
     if (fwrite(&lista->total, sizeof(int), 1, arq) != 1) {
-        printf("\nErro: Falha ao gravar a quantidade de clientes!\n");
+        printf("\nERRO: Falha ao gravar a quantidade de clientes!\n");
         fclose(arq);
         remove("clientes.tmp");
         return 0;
     }
 
-    // Se tiver clientes cadastrados, grava o bloco no arquivo e verifica se a gravação foi bem sucedida
+    // Se houver clientes cadastrados, grava o bloco inteiro
     if (lista->total > 0 && lista->dados != NULL) {
         if (fwrite(lista->dados, sizeof(Cliente), lista->total, arq) != (size_t)lista->total) {
-            printf("\nErro: Falha ao gravar os dados dos clientes!\n");
+            printf("\nERRO: Falha ao gravar os dados dos clientes!\n");
             fclose(arq);
             remove("clientes.tmp");
             return 0;
         }
     }
 
-    // Se tudo deu certo, fecha o arquivo temporário com os dados salvos com sucesso
     fclose(arq);
 
-    // Faz a troca atômica garantindo 100% de sucesso na gravação do arquivo e verifica
-    remove("clientes.dat"); // se o arquivo não existir na primeira vez, a função retona um erro que é ignorado
+    // Faz a troca atômica garantindo integridade do arquivo
+    remove("clientes.dat"); // Se o arquivo não existir na primeira vez, o retorno é ignorado
     if (rename("clientes.tmp", "clientes.dat") != 0) {
-        printf("\nErro: Falha ao realizar a troca dos arquivos!\n");
+        printf("\nERRO: Falha ao realizar a troca dos arquivos!\n");
         return 0;
     }
 
-    return 1; // Sucesso
+    return 1;
 }
 
 int carregarClientes(ListaClientes *lista) {
@@ -124,7 +173,6 @@ int carregarClientes(ListaClientes *lista) {
         return 1;
     }
 
-    // Se o arquivo existe, lê a quantidade e verifica se deu certo, caso não, fecha o arquivo
     int qtd = 0;
     if (fread(&qtd, sizeof(int), 1, arq) != 1) {
         fclose(arq);
@@ -134,18 +182,20 @@ int carregarClientes(ListaClientes *lista) {
     if (qtd > 0) {
         Cliente *temp = (Cliente *) realloc(lista->dados, qtd * sizeof(Cliente));
         if (temp == NULL) {
-            printf("\nErro: Falha ao alocar memoria!\n");
+            printf("\nERRO: Falha ao alocar memoria para clientes!\n");
+            fclose(arq);
+            return 0;
+        }
+
+        if (fread(temp, sizeof(Cliente), qtd, arq) != (size_t)qtd) {
+            printf("\nERRO: Falha na leitura do registro de clientes!\n");
+            free(temp);
+            fclose(arq);
             return 0;
         }
 
         lista->dados = temp;
         lista->total = qtd;
-
-        // Lê os clientes e carrega do arquivo
-        if (fread(lista->dados, sizeof(Cliente), qtd, arq) != (size_t)qtd) {
-            printf("\nErro: Falha na leitura do registro de clientes!\n");
-            return 0;
-        }
     }
 
     fclose(arq);
